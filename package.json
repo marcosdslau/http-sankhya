@@ -19,10 +19,14 @@
   ],
   "author": "",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "git+https://github.com/marcosdslau/http-sankhya.git"
   },
+  "homepage": "https://github.com/marcosdslau/http-sankhya#readme",
   "files": [
     "dist",
     "README.md"
