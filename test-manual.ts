@@ -92,6 +92,33 @@ async function runTest() {
         });
         console.log('SaveRecord Response:', JSON.stringify(saveResponse, null, 2));
 
+        console.log('\nTentando saveRecord (Atualização)...');
+        const saveResponse2 = await sankhya.saveRecord({
+            rootEntity: 'GrupoProduto',
+            localFields: {
+                CODGRUPAI: "160000",
+                CODGRUPOPROD: "160700",
+                DESCRGRUPOPROD: "TESTE INT 3 Atualizado1",
+                ATIVO: "S",
+                GRUPOICMS: "1",
+                TIPOIMPOSTO: "1",
+                COMCURVA_A: "0",
+                COMCURVA_B: "0",
+                COMCURVA_C: "0",
+                CONSGRUPRODCAT42: "N",
+                VISIVELAPPOS: "S"
+            },
+            entity: {
+                fieldset: {
+                    list: "CODGRUPOPROD,DESCRGRUPOPROD,ATIVO"
+                }
+            },
+            key: {
+                "CODGRUPOPROD": "160700"
+            }
+        });
+        console.log('SaveRecord Response atualização:', JSON.stringify(saveResponse2, null, 2));
+
 
     } catch (error: any) {
         console.error('Erro no teste:', error.message);

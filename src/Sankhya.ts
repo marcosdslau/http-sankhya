@@ -21,6 +21,7 @@ export interface SaveRecordOptions {
     rootEntity: string;
     includePresentationFields?: 'S' | 'N';
     localFields?: Record<string, any>;
+    key?: Record<string, any>;
     entity?: Record<string, any>;
 }
 
@@ -194,7 +195,7 @@ export class Sankhya {
     }
 
     public async saveRecord(
-        { rootEntity, includePresentationFields = 'N', localFields = {}, entity = {} }: SaveRecordOptions,
+        { rootEntity, includePresentationFields = 'N', localFields = {}, key = {}, entity = {} }: SaveRecordOptions,
         outputType: 'json' | 'xml' = 'json'
     ): Promise<any> {
         return this.execService({
@@ -204,7 +205,8 @@ export class Sankhya {
                     rootEntity,
                     includePresentationFields,
                     dataRow: {
-                        localFields: SankhyaHelper.transformLocalFields(localFields)
+                        localFields: SankhyaHelper.transformLocalFields(localFields),
+                        key: SankhyaHelper.transformLocalFields(key)
                     },
                     entity
                 }

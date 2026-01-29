@@ -138,16 +138,18 @@ const novoGrupo = await sankhya.saveRecord({
 });
 ```
 
-#### Atualizar Registro Existente (Upsert)
-Para atualizar, inclua a Chave Primária nos `localFields`. O comportamento exato depende da entidade Sankhya, mas geralmente atua como "Upsert" (Atualiza se existe, cria se não).
+#### Atualizar Registro Existente
+Para atualizar um registro existente, você deve fornecer a propriedade `key` contendo a chave primária do registro. Isso instrui o Sankhya a realizar um update na linha específica.
 
 ```typescript
 const atualizacao = await sankhya.saveRecord({
     rootEntity: 'GrupoProduto',
     localFields: {
-        CODGRUPOPROD: "20310006", // PK existente
-        DESCRGRUPOPROD: "NOME ATUALIZADO", // Campo a alterar
+        DESCRGRUPOPROD: "NOME ATUALIZADO", // Campos a alterar
         ATIVO: "N"
+    },
+    key: {
+        CODGRUPOPROD: "20310006" // Chave Primária (PK) para identificação do registro
     }
 });
 ```
