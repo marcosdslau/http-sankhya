@@ -4,8 +4,8 @@ import { Sankhya } from './src/Sankhya';
 // Você deve preencher com credenciais reais para testar
 const config = {
     urlBase: 'https://api.sandbox.sankhya.com.br',
-    clientId: 'xxxxx',
-    clientSecret: 'xxxxxxx',
+    clientId: 'xxxxxx',
+    clientSecret: 'xxxxxx',
     token: 'xxxxxx' // Opcional se já tiver token
 };
 
@@ -49,14 +49,32 @@ async function runTest() {
         });
         console.log('LoadRecord Response (Formatted):', JSON.stringify(loadResponse2, null, 2));
 
+        const loadResponse3 = await sankhya.loadRecord({
+            rootEntity: 'GrupoProduto',
+            entity: {
+                fieldset: {
+                    list: "CODGRUPOPROD,DESCRGRUPOPROD,ATIVO,GRUPOICMS,TIPOIMPOSTO,COMCURVA_A,COMCURVA_B,COMCURVA_C,CONSGRUPRODCAT42,VISIVELAPPOS"
+                }
+            },
+            rows: {
+                row: {
+                    CODGRUPOPROD: {
+                        "$": "160700"
+                    }
+                }
+            }
+        });
+        console.log('LoadRecord Response (Formatted):', JSON.stringify(loadResponse3, null, 2));
+
 
         console.log('\nTentando saveRecord...');
         // Cuidado ao testar saveRecord para não criar lixo no banco
         const saveResponse = await sankhya.saveRecord({
-            rootEntity: 'CRUDServiceProvider.saveRecord',
+            rootEntity: 'GrupoProduto',
             localFields: {
-                CODGRUPOPROD: "20310006",
-                DESCRGRUPOPROD: "GRUPO TESTE INTEGRACAO",
+                CODGRUPAI: "160000",
+                CODGRUPOPROD: "160700",
+                DESCRGRUPOPROD: "GRUPO TESTE INTEGRACAO 3",
                 ATIVO: "S",
                 GRUPOICMS: "1",
                 TIPOIMPOSTO: "1",

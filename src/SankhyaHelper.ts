@@ -10,9 +10,13 @@ export class SankhyaHelper {
 
         switch (options.serviceName) {
             case 'CRUDServiceProvider.loadRecords':
-            case 'CRUDServiceProvider.loadRecord':
-            case 'CRUDServiceProvider.saveRecord':
                 return this.processLoadRecords(response);
+
+            case 'CRUDServiceProvider.saveRecord':
+                return this.processSaveRecord(response);
+
+            case 'CRUDServiceProvider.loadRecord':
+                return this.processLoadRecord(response);
 
             default:
                 // Se não for um dos serviços conhecidos de CRUD/Load, retorna original
@@ -42,6 +46,24 @@ export class SankhyaHelper {
     }
 
     // Lógica de transformação extraída para método privado
+    private static processSaveRecord(response: any): any {
+        if (response.status === '0') {
+            return response;
+        }
+
+        return this.processLoadRecords(response);
+    }
+
+    private static processLoadRecord(response: any): any {
+        const { entities } = response.responseBody;
+
+        if (entities.total === '0') {
+            return null;
+        }
+
+        return this.processLoadRecords(response);
+    }
+
     private static processLoadRecords(response: any): any {
         const { entities } = response.responseBody;
         const metadata = entities.metadata;

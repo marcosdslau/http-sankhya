@@ -206,8 +206,8 @@ export class Sankhya {
                     dataRow: {
                         localFields: SankhyaHelper.transformLocalFields(localFields)
                     },
-                },
-                entity
+                    entity
+                }
             },
             outputType
         }, outputType);
