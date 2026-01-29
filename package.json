@@ -1,6 +1,6 @@
 {
   "name": "http-sankhya",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Biblioteca TypeScript para integração com ERP Sankhya",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
