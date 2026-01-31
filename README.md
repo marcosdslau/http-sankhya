@@ -54,6 +54,12 @@ const produtos = await sankhya.loadRecords({
         expression: "ATIVO = 'S'" // Filtro SQL-like
     }
 });
+
+// Retorno Exemplo:
+// [
+//     { "CODGRUPOPROD": "100", "DESCRGRUPOPROD": "GERAL", "ATIVO": "S" },
+//     { "CODGRUPOPROD": "101", "DESCRGRUPOPROD": "MATERIA PRIMA", "ATIVO": "S" }
+// ]
 ```
 
 #### Exemplo com Paginação e Seleção de Campos
@@ -72,6 +78,12 @@ const parceiros = await sankhya.loadRecords({
         }
     }
 });
+
+// Retorno Exemplo:
+// [
+//     { "CODPARC": "200", "NOMEPARC": "CLIENTE EXEMPLO", "CGC_CPF": "123.456.789-00", "EMAIL": "cliente@email.com" },
+//     { "CODPARC": "201", "NOMEPARC": "OUTRO CLIENTE", "CGC_CPF": "987.654.321-00", "EMAIL": "outro@email.com" }
+// ]
 ```
 
 #### Exemplo com Campos de Apresentação
@@ -85,6 +97,16 @@ const vendas = await sankhya.loadRecords({
         expression: "DTNEG >= '01/01/2024'"
     }
 });
+
+// Retorno Exemplo:
+// [
+//     {
+//         "NUNOTA": "100",
+//         "DTNEG": "01/01/2024",
+//         "CODPARC": "200",
+//         "Parceiro_NOMEPARC": "CLIENTE EXEMPLO"
+//     }
+// ]
 ```
 
 ---
@@ -110,6 +132,14 @@ const produto = await sankhya.loadRecord({
 
 console.log(produto);
 // Saída: { CODPROD: "1005", DESCRPROD: "PRODUTO TESTE", ... }
+
+// Retorno Exemplo Completo:
+// {
+//     "CODPROD": "1005",
+//     "DESCRPROD": "PRODUTO TESTE",
+//     "ATIVO": "S",
+//     "PRECO": "50.00"
+// }
 ```
 
 ---
@@ -136,6 +166,12 @@ const novoGrupo = await sankhya.saveRecord({
         }
     }
 });
+
+// Retorno Exemplo:
+// {
+//     "CODGRUPOPROD": "161000",
+//     "DESCRGRUPOPROD": "NOVO GRUPO 2024"
+// }
 ```
 
 #### Atualizar Registro Existente
@@ -152,6 +188,30 @@ const atualizacao = await sankhya.saveRecord({
         CODGRUPOPROD: "20310006" // Chave Primária (PK) para identificação do registro
     }
 });
+
+#### Retorno Exemplo (Sucesso)
+Tanto na criação quanto na atualização, a biblioteca processa a resposta e retorna um objeto limpo com os campos solicitados no `fieldset`.
+
+```json
+{
+    "CODGRUPOPROD": "160700",
+    "DESCRGRUPOPROD": "NOME ATUALIZADO",
+    "ATIVO": "N"
+}
+```
+
+#### Retorno Exemplo (Falha)
+Caso ocorra algum erro (status '0'), a biblioteca retorna o objeto de resposta original contendo a mensagem de erro.
+
+```json
+{
+    "serviceName": "CRUDServiceProvider.saveRecord",
+    "status": "0",
+    "pendingPrinting": "false",
+    "transactionId": "123456789",
+    "statusMessage": "Erro: O registro já existe ou violação de restrição de integridade."
+}
+```
 ```
 
 ---
@@ -186,6 +246,15 @@ await sankhya.execService({
         }
     }
 });
+
+// Retorno Exemplo:
+// {
+//     "serviceName": "CRUDServiceProvider.removeRecord",
+//     "status": "1",
+//     "pendingPrinting": "false",
+//     "transactionId": "123456789",
+//     "responseBody": {}
+// }
 ```
 
 ## Funcionalidades
