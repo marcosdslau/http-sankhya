@@ -216,13 +216,13 @@ Caso ocorra algum erro (status '0'), a biblioteca retorna o objeto de resposta o
 
 ---
 
-### 4. Execução de Serviço Genérico (execService)
+### 4. Execução de Serviço Mge (execServiceMge)
 
-Para endpoints que não sejam CRUD padrão (ex: executar Stored Procedures, ações de workflow, ou consultas de metadados), use `execService`.
+Para endpoints que não sejam CRUD padrão (ex: executar Stored Procedures, ações de workflow, ou consultas de metadados), use `execServiceMge`. Este método utiliza o endpoint `/gateway/v1/mge/service.sbr`.
 
 #### Exemplo: Consultar Estoque (Serviço Hipotético)
 ```typescript
-const estoque = await sankhya.execService({
+const estoque = await sankhya.execServiceMge({
     serviceName: 'EstoqueSP.getEstoque',
     requestBody: {
         codProd: '1005',
@@ -235,7 +235,7 @@ const estoque = await sankhya.execService({
 Embora exista o método `.delete()`, algumas operações de exclusão no Sankhya são feitas via serviços específicos.
 
 ```typescript
-await sankhya.execService({
+await sankhya.execServiceMge({
     serviceName: 'CRUDServiceProvider.removeRecord',
     requestBody: {
         entity: {
@@ -257,10 +257,79 @@ await sankhya.execService({
 // }
 ```
 
+---
+
+### 5. Execução de Serviço MgeCom (execServiceMgeCom)
+
+Para serviços diversos do Sankhya que utilizam o endpoint **mgecom** (`/gateway/v1/mgecom/service.sbr`), como inclusão de notas, operações comerciais, etc. Este método recebe o `serviceName` e o `requestBody` em **formato JSON simples** e transforma automaticamente todos os valores primitivos (strings/números) para o formato `{ "$": "valor" }` exigido pelo Sankhya.
+
+> **Nota:** Diferente do `execServiceMge` que usa `/gateway/v1/mge/service.sbr`, este método envia as requisições para `/gateway/v1/mgecom/service.sbr`.
+
+#### Exemplo: Incluir Pedido de Venda / Nota (CACSP.incluirNota)
+```typescript
+const nota = await sankhya.execServiceMgeCom('CACSP.incluirNota', {
+    nota: {
+        cabecalho: {
+            CODPARC: "3",
+            DTNEG: "03/07/2023",
+            CODTIPOPER: "1718",
+            CODTIPVENDA: "34",
+            CODVEND: "0",
+            CODEMP: "15",
+            TIPMOV: "V", // V = Venda | C=Compra | D=Devolução | etc.
+            CODNAT: "10101002",
+            CODCENCUS: "10600200",
+            SERIE: "14"
+        },
+        itens: {
+            INFORMARPRECO: "True",
+            item: [
+                {
+                    CODPROD: "6",
+                    QTDNEG: "1",
+                    CODLOCALORIG: "0",
+                    CODVOL: "SV",
+                    PERCDESC: "0",
+                    VLRUNIT: "81.75"
+                }
+            ]
+        }
+    }
+});
+```
+
+A biblioteca transforma automaticamente o payload acima para o formato exigido pelo Sankhya antes do envio:
+
+```json
+{
+    "serviceName": "CACSP.incluirNota",
+    "requestBody": {
+        "nota": {
+            "cabecalho": {
+                "CODPARC": { "$": "3" },
+                "DTNEG": { "$": "03/07/2023" },
+                "CODTIPOPER": { "$": "1718" }
+            },
+            "itens": {
+                "INFORMARPRECO": { "$": "True" },
+                "item": [
+                    {
+                        "CODPROD": { "$": "6" },
+                        "QTDNEG": { "$": "1" },
+                        "CODVOL": { "$": "SV" }
+                    }
+                ]
+            }
+        }
+    }
+}
+```
+
 ## Funcionalidades
 
 - **Tratamento de Resposta**: Simplifica a resposta aninhada do Sankhya.
     - *LoadRecords*: Retorna `Array<Objeto>`.
     - *LoadRecord*: Retorna `Objeto` único (lida com ausência de metadados).
 - **Transformação de Payload**: O método `saveRecord` aceita objetos simples JS (ex: `{ CAMPO: "Valor" }`) e os converte automaticamente para `{ CAMPO: { "$": "Valor" } }`.
+- **Transformação Profunda de Payload**: O método `execServiceMgeCom` transforma recursivamente todos os valores primitivos de um objeto JSON aninhado para o formato `{ "$": "valor" }`, incluindo arrays e sub-objetos.
 - **Tipagem TypeScript**: Suporte completo a interfaces para garantir segurança de tipo no desenvolvimento.

@@ -138,7 +138,7 @@ export class Sankhya {
 
     // Sankhya Specific Methods
 
-    public async execService(options: ExecServiceOptions, outputType: 'json' | 'xml' = 'json'): Promise<any> {
+    public async execServiceMge(options: ExecServiceOptions, outputType: 'json' | 'xml' = 'json'): Promise<any> {
         // Standard Sankhya Service URL pattern: /mge/service.sbr?serviceName=...&outputType=json
         const { serviceName, requestBody } = options;
 
@@ -160,7 +160,7 @@ export class Sankhya {
         { rootEntity, includePresentationFields = 'N', offsetPage = 0, criteria = {}, entity = {} }: LoadRecordsOptions,
         outputType: 'json' | 'xml' = 'json'
     ): Promise<any> {
-        return this.execService({
+        return this.execServiceMge({
             serviceName: 'CRUDServiceProvider.loadRecords',
             requestBody: {
                 dataSet: {
@@ -179,7 +179,7 @@ export class Sankhya {
         { rootEntity, includePresentationFields = 'N', criteria = {}, entity = {}, rows = {} }: LoadRecordsOptions,
         outputType: 'json' | 'xml' = 'json'
     ): Promise<any> {
-        return this.execService({
+        return this.execServiceMge({
             serviceName: 'CRUDServiceProvider.loadRecord',
             requestBody: {
                 dataSet: {
@@ -198,7 +198,7 @@ export class Sankhya {
         { rootEntity, includePresentationFields = 'N', localFields = {}, key = {}, entity = {} }: SaveRecordOptions,
         outputType: 'json' | 'xml' = 'json'
     ): Promise<any> {
-        return this.execService({
+        return this.execServiceMge({
             serviceName: 'CRUDServiceProvider.saveRecord',
             requestBody: {
                 dataSet: {
@@ -213,6 +213,65 @@ export class Sankhya {
             },
             outputType
         }, outputType);
+    }
+
+    /**
+     * Executa serviços diversos do Sankhya via endpoint mgecom.
+     * Recebe o serviceName e o requestBody em formato JSON simples,
+     * transformando automaticamente todos os valores primitivos para { "$": "valor" }.
+     * 
+     * Endpoint: /gateway/v1/mgecom/service.sbr
+     * 
+     * @example
+     * ```typescript
+     * // Exemplo: Inclusão de Pedido de Venda
+     * const nota = await sankhya.execServiceMgeCom('CACSP.incluirNota', {
+     *     nota: {
+     *         cabecalho: {
+     *             CODPARC: "3",
+     *             DTNEG: "03/07/2023",
+     *             CODTIPOPER: "1718",
+     *             CODTIPVENDA: "34",
+     *             CODVEND: "0",
+     *             CODEMP: "15",
+     *             TIPMOV: "P",
+     *             CODNAT: "10101002",
+     *             CODCENCUS: "10600200",
+     *             SERIE: "14"
+     *         },
+     *         itens: {
+     *             INFORMARPRECO: "True",
+     *             item: [
+     *                 {
+     *                     CODPROD: "6",
+     *                     QTDNEG: "1",
+     *                     CODLOCALORIG: "0",
+     *                     CODVOL: "SV",
+     *                     PERCDESC: "0",
+     *                     VLRUNIT: "81.75"
+     *                 }
+     *             ]
+     *         }
+     *     }
+     * });
+     * ```
+     */
+    public async execServiceMgeCom(
+        serviceName: string,
+        requestBody: Record<string, any>,
+        outputType: 'json' | 'xml' = 'json'
+    ): Promise<any> {
+        const transformedBody = SankhyaHelper.transformDeepFields(requestBody);
+
+        const payload = {
+            serviceName,
+            requestBody: transformedBody
+        };
+
+        return this.post('/gateway/v1/mgecom/service.sbr', payload, {
+            serviceName,
+            outputType
+        }, {});
     }
 
     private isEmptyObject(obj: any): boolean {

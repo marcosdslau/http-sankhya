@@ -25,6 +25,43 @@ export class SankhyaHelper {
     }
 
     /**
+     * Transforma recursivamente todos os valores primitivos (string/number) de um objeto
+     * para o formato Sankhya { "$": valor }, percorrendo objetos e arrays aninhados.
+     * Ex: { nota: { cabecalho: { CAMPO: "VALOR" } } } -> { nota: { cabecalho: { CAMPO: { "$": "VALOR" } } } }
+     */
+    public static transformDeepFields(obj: any): any {
+        if (obj === null || obj === undefined) {
+            return obj;
+        }
+
+        // Se for string ou number, transforma para { "$": valor }
+        if (typeof obj === 'string' || typeof obj === 'number') {
+            return { $: String(obj) };
+        }
+
+        // Se for array, aplica recursivamente em cada elemento
+        if (Array.isArray(obj)) {
+            return obj.map(item => this.transformDeepFields(item));
+        }
+
+        // Se já estiver no formato { "$": ... }, mantém como está
+        if (typeof obj === 'object' && '$' in obj && Object.keys(obj).length === 1) {
+            return obj;
+        }
+
+        // Se for objeto, aplica recursivamente em cada propriedade
+        if (typeof obj === 'object') {
+            const transformed: Record<string, any> = {};
+            for (const key of Object.keys(obj)) {
+                transformed[key] = this.transformDeepFields(obj[key]);
+            }
+            return transformed;
+        }
+
+        return obj;
+    }
+
+    /**
      * Transforma um objeto simples de chave/valor para o formato do Sankhya
      * Ex: { CAMPO: "VALOR" } -> { CAMPO: { "$": "VALOR" } }
      */
