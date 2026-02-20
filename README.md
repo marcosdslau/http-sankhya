@@ -44,7 +44,7 @@ await sankhya.login();
 
 ### 1. loadRecords (Buscar Múltiplos Registros)
 
-Busca uma lista de registros com suporte a filtros, paginação e seleção de campos.
+Busca uma lista de registros com suporte a filtros, paginação e seleção de campos. Este método utiliza o serviço `CRUDServiceProvider.loadRecords`.
 
 #### Exemplo Básico
 ```typescript
@@ -113,7 +113,7 @@ const vendas = await sankhya.loadRecords({
 
 ### 2. loadRecord (Buscar Registro Único)
 
-Busca um único registro específico, geralmente pela Chave Primária (PK).
+Busca um único registro específico, geralmente pela Chave Primária (PK). Este método utiliza o serviço `CRUDServiceProvider.loadRecord`.
 
 ```typescript
 const produto = await sankhya.loadRecord({
@@ -146,7 +146,7 @@ console.log(produto);
 
 ### 3. saveRecord (Criar ou Atualizar Registro)
 
-Cria ou atualiza registros. A biblioteca formata automaticamente o payload do objeto `localFields` para o padrão exigido pelo Sankhya.
+Cria ou atualiza registros. Este método é específico para manipulações que utilizam o serviço `CRUDServiceProvider.saveRecord`. A biblioteca formata automaticamente o payload do objeto `localFields` para o padrão exigido pelo Sankhya.
 
 #### Criar Novo Registro
 Para criar, omita a Chave Primária (se for auto-incremental) ou passe os valores necessários.
