@@ -268,10 +268,12 @@ export class Sankhya {
             requestBody: transformedBody
         };
 
-        return this.post('/gateway/v1/mgecom/service.sbr', payload, {
+        const response = await this.post('/gateway/v1/mgecom/service.sbr', payload, {
             serviceName,
             outputType
-        }, {});
+        }, { 'Content-Type': 'application/json' });
+
+        return SankhyaHelper.flattenMgeComResponse(response);
     }
 
     private isEmptyObject(obj: any): boolean {

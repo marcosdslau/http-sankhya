@@ -25,16 +25,56 @@ export class SankhyaHelper {
     }
 
     /**
-     * Transforma recursivamente todos os valores primitivos (string/number) de um objeto
-     * para o formato Sankhya { "$": valor }, percorrendo objetos e arrays aninhados.
-     * Ex: { nota: { cabecalho: { CAMPO: "VALOR" } } } -> { nota: { cabecalho: { CAMPO: { "$": "VALOR" } } } }
+     * Remove recursivamente os wrappers { "$": "valor" } do retorno do Sankhya,
+     * retornando um JSON limpo e amigável.
+     * Utilizado para tratar retornos do endpoint mgecom (ex: CACSP.incluirNota).
      */
-    public static transformDeepFields(obj: any): any {
+    public static flattenMgeComResponse(obj: any): any {
         if (obj === null || obj === undefined) {
             return obj;
         }
 
+        // Se for um objeto com apenas a chave "$", extrai o valor
+        if (typeof obj === 'object' && !Array.isArray(obj) && '$' in obj && Object.keys(obj).length === 1) {
+            return obj.$;
+        }
+
+        // Se for array, aplica recursivamente em cada elemento
+        if (Array.isArray(obj)) {
+            return obj.map(item => this.flattenMgeComResponse(item));
+        }
+
+        // Se for objeto, aplica recursivamente em cada propriedade
+        if (typeof obj === 'object') {
+            const result: Record<string, any> = {};
+            for (const key of Object.keys(obj)) {
+                result[key] = this.flattenMgeComResponse(obj[key]);
+            }
+            return result;
+        }
+
+        return obj;
+    }
+
+    /**
+     * Transforma recursivamente todos os valores primitivos (string/number) de um objeto
+     * para o formato Sankhya { "$": valor }, percorrendo objetos e arrays aninhados.
+     * 
+     * Strings que são "irmãs" de arrays no mesmo objeto NÃO são encapsuladas,
+     * pois representam atributos XML (ex: INFORMARPRECO em "itens").
+     * 
+     * Ex: { nota: { cabecalho: { CAMPO: "VALOR" } } } -> { nota: { cabecalho: { CAMPO: { "$": "VALOR" } } } }
+     */
+    public static transformDeepFields(obj: any): any {
+        // Campos com valor null ou undefined são tratados como placeholders (ex: PKs)
+        // e enviados como objeto vazio {} no formato Sankhya
+        if (obj === null || obj === undefined) {
+            return {};
+        }
+
         // Se for string ou number, transforma para { "$": valor }
+        // (este caso é chamado recursivamente; a decisão de NÃO transformar
+        //  é feita no nível do objeto pai, abaixo)
         if (typeof obj === 'string' || typeof obj === 'number') {
             return { $: String(obj) };
         }
@@ -51,9 +91,22 @@ export class SankhyaHelper {
 
         // Se for objeto, aplica recursivamente em cada propriedade
         if (typeof obj === 'object') {
+            const keys = Object.keys(obj);
+
+            // Verifica se o objeto possui algum filho que é array.
+            // Se sim, strings neste nível são atributos XML e NÃO devem ser encapsuladas.
+            const hasArrayChild = keys.some(k => Array.isArray(obj[k]));
+
             const transformed: Record<string, any> = {};
-            for (const key of Object.keys(obj)) {
-                transformed[key] = this.transformDeepFields(obj[key]);
+            for (const key of keys) {
+                const value = obj[key];
+
+                if (hasArrayChild && (typeof value === 'string' || typeof value === 'number')) {
+                    // Atributo XML: mantém como string pura
+                    transformed[key] = value;
+                } else {
+                    transformed[key] = this.transformDeepFields(value);
+                }
             }
             return transformed;
         }

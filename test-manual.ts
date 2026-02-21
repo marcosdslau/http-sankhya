@@ -4,9 +4,9 @@ import { Sankhya } from './src/Sankhya';
 // Você deve preencher com credenciais reais para testar
 const config = {
     urlBase: 'https://api.sandbox.sankhya.com.br',
-    clientId: 'xxxxxx',
-    clientSecret: 'xxxxxx',
-    token: 'xxxxxx' // Opcional se já tiver token
+    clientId: 'xxxxxxxx',
+    clientSecret: 'xxxxxxxx',
+    token: 'xxxxxxxx' // Opcional se já tiver token
 };
 
 const sankhya = new Sankhya(config);
@@ -119,11 +119,85 @@ async function runTest() {
         });
         console.log('SaveRecord Response atualização:', JSON.stringify(saveResponse2, null, 2));
 
+        // =============================================
+        // Teste de Inclusão de Pedido de Venda (MgeCom)
+        // =============================================
+        await testIncluirPedidoVenda(sankhya);
 
     } catch (error: any) {
         console.error('Erro no teste:', error.message);
         if (error.response) {
             console.error('Detalhes do erro:', error.response.data);
+        }
+    }
+}
+
+/**
+ * Testa a inclusão de um Pedido de Venda via CACSP.incluirNota
+ * O retorno já vem tratado (sem wrappers { "$": "valor" }) pelo execServiceMgeCom
+ */
+async function testIncluirPedidoVenda(sankhyaerp: Sankhya) {
+    console.log('\n=============================================');
+    console.log('Teste: Inclusão de Pedido de Venda (CACSP.incluirNota)');
+    console.log('=============================================');
+
+    try {
+        const pedidoVendaSK = await sankhyaerp.execServiceMgeCom('CACSP.incluirNota', {
+            "nota": {
+                "cabecalho": {
+                    "NUNOTA": null,
+                    "CODPARC": "102",
+                    "DTNEG": "20/02/2026",
+                    "CODTIPOPER": "1004",
+                    "CODTIPVENDA": "35",
+                    "CODVEND": "0",
+                    "CODEMP": "12",
+                    "TIPMOV": "P",
+                    "CODNAT": "80102002",
+                    "CODCENCUS": "370100"
+                },
+                "itens": {
+                    "INFORMARPRECO": "True",
+                    "item": [
+                        {
+                            "NUNOTA": null,
+                            "CODPROD": "2054",
+                            "QTDNEG": "1",
+                            "CODLOCALORIG": "0",
+                            "CODVOL": "0",
+                            "PERCDESC": "0",
+                            "VLRUNIT": "10001.75"
+                        }
+                    ]
+                }
+            }
+        });
+
+        console.log('\n--- Retorno já tratado (JSON amigável) ---');
+        console.log(JSON.stringify(pedidoVendaSK, null, 2));
+
+        // Extrai informações principais de forma direta
+        if (pedidoVendaSK?.responseBody?.pk?.NUNOTA) {
+            const nunota = pedidoVendaSK.responseBody.pk.NUNOTA;
+            console.log(`\n✅ Pedido de Venda incluído com sucesso! NUNOTA: ${nunota}`);
+        } else {
+            console.log('\n⚠️  Pedido criado, mas não foi possível extrair o NUNOTA do retorno.');
+        }
+
+        if (pedidoVendaSK?.status === '1') {
+            console.log('📋 Status: Sucesso');
+        } else {
+            console.log(`📋 Status: ${pedidoVendaSK?.status ?? 'Desconhecido'}`);
+        }
+
+        if (pedidoVendaSK?.transactionId) {
+            console.log(`🔑 Transaction ID: ${pedidoVendaSK.transactionId}`);
+        }
+
+    } catch (error: any) {
+        console.error('\n❌ Erro ao incluir Pedido de Venda:', error.message);
+        if (error.response) {
+            console.error('Detalhes do erro:', JSON.stringify(error.response.data, null, 2));
         }
     }
 }
